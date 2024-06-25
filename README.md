@@ -18,6 +18,16 @@ The project is organized into the following directories:
     |-- notebooks
     |-- references
     |-- scripts
+    |-- car-penalties
+    | |-- __init__.py
+    | |-- config.py
+    | |-- dataset.py
+    | |-- features.py
+    | |-- plots.py
+    | |-- modeling
+    | | |-- __init__.py
+    | | |-- predict.py
+    | | |-- train.py
 
 ### Directory Descriptions
 
@@ -36,5 +46,16 @@ The project is organized into the following directories:
 - **references/**: This directory contains reference materials, such as research papers, articles, and other resources that are relevant to the project.
 
 - **scripts/**: This directory includes Python scripts for various purposes, such as data preprocessing, model training, evaluation, and utility functions.
+
+- **car-penalties/**: This directory represents a specific module or package within the project.
+  - `__init__.py`: Initialization file for the `car-penalties` module.
+  - `config.py`: Configuration settings for the module.
+  - `dataset.py`: Module for handling datasets related to car penalties.
+  - `features.py`: Module for generating features related to car penalties.
+  - `plots.py`: Module for generating plots related to car penalties.
+  - `modeling/`: Subdirectory for machine learning modeling within the `car-penalties` module.
+    - `__init__.py`: Initialization file for the `modeling` submodule.
+    - `predict.py`: Module for making predictions using trained models.
+    - `train.py`: Module for training machine learning models.
 
 ## Getting Started
