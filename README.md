@@ -10,9 +10,9 @@ The project is organized into the following directories:
 
 project-root/
 |-- data
-│ |-- cleaned
-│ |-- raw
-│ |-- processed
+| |-- cleaned
+| |-- raw
+| |-- processed
 |-- docs
 |-- models
 |-- notebooks
