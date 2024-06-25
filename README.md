@@ -8,15 +8,16 @@ This project aims to automate the extraction and management of penalties.
 
 The project is organized into the following directories:
 
-├── data
-│ ├── cleaned
-│ ├── raw
-│ ├── processed
-├── docs
-├── models
-├── notebooks
-├── references
-├── scripts
+project-root/
+|-- data
+│ |-- cleaned
+│ |-- raw
+│ |-- processed
+|-- docs
+|-- models
+|-- notebooks
+|-- references
+|-- scripts
 
 ### Directory Descriptions
 
