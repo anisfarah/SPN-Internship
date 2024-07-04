@@ -1,4 +1,12 @@
 **/.ipynb_checkpoints
 **/__pycache__
 **/.vscode
+.venv*/
+venv*/
+__pycache__/
+dist/
+.coverage*
+htmlcov/
+.tox/
+docs/_build/
 env/
