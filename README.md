@@ -102,12 +102,12 @@ pip freeze > requirements.txt
 
 Team members should pull the repository, create a virtual environment, and install dependencies from 'requirements.txt':
 
-````bash
+```bash
 git clone https://gitlab.com/swisspremiumnegoce/car-penalties-management.git # git clone
 cd car-penalties-management
 python -m venv env
 .\env\Scripts\activate # On macos/Linux: source env/bin/activate
-pip install -r requirements.txt```
-````
+pip install -r requirements.txt
+```
 
 By following these steps, all team members will have the same versions of the libraries, ensuring consistency across the project.
