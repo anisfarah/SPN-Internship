@@ -58,4 +58,56 @@ The project is organized into the following directories:
     - `predict.py`: Module for making predictions using trained models.
     - `train.py`: Module for training machine learning models.
 
-## Getting Started
+## Setting Up the Project Environment
+
+To ensure all team members use the same library versions, follow the steps below to create a virtual environment and manage dependencies using `requirements.txt`.
+
+### Step 1: Create a Virtual Environment
+
+Create a virtual environment to manage your project's dependencies:
+
+```bash
+python -m venv env
+```
+
+Activate the virtual environment:
+
+- On Windows:
+
+```bash
+.\env\Scripts\activate
+```
+
+- On Linux/macOs
+
+```bash
+source env/bin/activate
+```
+
+### Step 2: Install Required Libraries
+
+Install the necessary libraries using pip:
+
+### Step 3: Generate 'requirements.txt'
+
+Generate a requirements.txt file that lists all the installed packages and their versions:
+
+pip freeze > requirements.txt
+
+```bash
+pip freeze > requirements.txt
+```
+
+### Step 4: Team Members Install Dependencies
+
+Team members should pull the repository, create a virtual environment, and install dependencies from 'requirements.txt':
+
+````bash
+git clone https://gitlab.com/swisspremiumnegoce/car-penalties-management.git # git clone
+cd car-penalties-management
+python -m venv env
+.\env\Scripts\activate # On macos/Linux: source env/bin/activate
+pip install -r requirements.txt```
+````
+
+By following these steps, all team members will have the same versions of the libraries, ensuring consistency across the project.
