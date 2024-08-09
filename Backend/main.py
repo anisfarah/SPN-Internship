@@ -1,13 +1,14 @@
 import os
 import cv2
 from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import FileResponse
-import os
+from fastapi.responses import FileResponse,JSONResponse
+import os,io
 import gc
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
+import requests
+import json
 import torch
 import torch.nn as nn
 import torchvision.transforms as torchvision_T
@@ -133,6 +134,39 @@ def extract_document(image_true, trained_model, image_size=384, buffer=10):
 
     return final
 
+
+# --- OCR Function ---
+import requests
+import json
+
+def ocr_space_file(image_data, overlay=False, api_key='helloworld', language='fre'):
+    payload = {
+        'isOverlayRequired': overlay,
+        'apikey': api_key,
+        'language': language,
+        'detectOrientation': True,
+        'scale': True,
+        'OCREngine': 2
+    }
+    files = {'image': ('image.jpg', image_data, 'image/jpeg')}
+    
+    r = requests.post(
+        'https://api.ocr.space/parse/image',
+        files=files,
+        data=payload,
+    )
+    result = json.loads(r.content.decode())  # Convert JSON response to Python object
+    
+    if 'ParsedResults' in result and len(result['ParsedResults']) > 0:
+        extracted_text = result['ParsedResults'][0]['ParsedText']  # Extract parsed text
+        return extracted_text
+    else:
+        return "No text extracted or error occurred"
+
+
+
+
+
 # Endpoint to handle file uploads and document extraction
 @app.post("/extract-document/")
 async def extract_document_endpoint(file: UploadFile = File(...)):
@@ -152,7 +186,21 @@ async def extract_document_endpoint(file: UploadFile = File(...)):
 
     return FileResponse(output_path, media_type="image/jpeg")
 
+
+@app.post("/extract-text/")
+async def extract_text(file: UploadFile = File(...)):
+    # Read the image file into memory
+    image_data = await file.read()
+
+    # Use the OCR function to extract text
+    extracted_text = ocr_space_file(image_data)
+
+    # Return the extracted text as a JSON response
+    return JSONResponse(content={"extracted_text": extracted_text})
+
+ 
+import uvicorn
+
 # To run the FastAPI app, use Uvicorn
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
