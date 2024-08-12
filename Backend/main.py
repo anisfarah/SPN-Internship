@@ -258,11 +258,6 @@ async def extract_text(file: UploadFile = File(...)):
 
 
 
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 @app.post("/pipeline-document/")
 async def pipeline_endpoint(file: UploadFile = File(...)):
     try:
@@ -314,7 +309,8 @@ async def pipeline_endpoint(file: UploadFile = File(...)):
         cv2.imwrite(denoised_image_path, denoised_image * 255)  # Convert back to 0-255 range and save
 
         # Use the OCR function to extract text
-        extracted_text = ocr_space_file(denoised_image_path)
+        with open(denoised_image_path, "rb") as image_file:
+            extracted_text = ocr_space_file(image_file)
 
         # Return the extracted text as JSON
         return JSONResponse(content={"extracted_text": extracted_text})
