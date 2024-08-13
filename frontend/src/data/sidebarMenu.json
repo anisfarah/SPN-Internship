@@ -1,0 +1,42 @@
+{
+  "cars-limousines": {
+    "menu": {
+      "cars-limousines": {
+        "id": 0,
+        "href": "/cars-limousines",
+        "title": "Home page",
+        "Icon": "HomepageIcon"
+      },
+      "penalties": {
+        "id": 1,
+        "href": "/cars-limousines/penalties",
+        "title": "Penalties",
+        "Icon": "PenaltyIcon"
+      },
+      "agencies": {
+        "id": 2,
+        "href": "/cars-limousines/agencies",
+        "title": "Agencies",
+        "Icon": "AgencyIcon"
+      }
+    },
+    "title": "Cars & limousines"
+  },
+  "homepage": {
+    "menu": {
+      "": {
+        "id": 0,
+        "href": "/",
+        "title": "Dashboard",
+        "Icon": "DashboardIcon"
+      },
+      "cars-limousines": {
+        "id": 1,
+        "href": "/cars-limousines",
+        "title": "Cars & limousines",
+        "Icon": "VehicleIcon"
+      }
+    },
+    "title": "Dashboard"
+  }
+}
