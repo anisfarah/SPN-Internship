@@ -1,4 +1,5 @@
 import os
+from uuid import uuid4
 import cv2
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse,JSONResponse
@@ -17,6 +18,12 @@ import torch.nn as nn
 import torchvision.transforms as torchvision_T
 from torchvision.models.segmentation import deeplabv3_resnet50
 from torchvision.models.segmentation import deeplabv3_mobilenet_v3_large
+# --- OCR Function ---
+import requests
+import json
+import uvicorn
+
+
 app = FastAPI()
 
 # Use the function we refactored earlier
@@ -138,10 +145,6 @@ def extract_document(image_true, trained_model, image_size=384, buffer=10):
     return final
 
 
-# --- OCR Function ---
-import requests
-import json
-
 def ocr_space_file(image_data, overlay=False, api_key='helloworld', language='fre'):
     payload = {
         'isOverlayRequired': overlay,
@@ -166,8 +169,13 @@ def ocr_space_file(image_data, overlay=False, api_key='helloworld', language='fr
     else:
         return "No text extracted or error occurred"
 
-
-
+# Function to preprocess a new image while keeping the original size
+def preprocess_image(image_path):
+    img = cv2.imread(image_path, 0)  # Load the image in grayscale
+    img = img / 255.  # Normalize the pixel values
+    img = np.expand_dims(img, axis=-1)  # Expand dimensions to fit the model input shape
+    img = np.expand_dims(img, axis=0)  # Add batch dimension
+    return img
 
 
 # Endpoint to handle file uploads and document extraction
@@ -188,28 +196,6 @@ async def extract_document_endpoint(file: UploadFile = File(...)):
     cv2.imwrite(output_path, extracted_image.astype('uint8'))
 
     return FileResponse(output_path, media_type="image/jpeg")
-# def preprocess_image(image):
-#     # Check if the image is in float64 format and convert it to uint8
-#     if image.dtype == np.float64:
-#         image = (image * 255).astype(np.uint8)  # Scale to 0-255 and convert to uint8
-
-#     # Ensure the image is in uint8 format before converting to grayscale
-#     if image.dtype != np.uint8:
-#         image = image.astype(np.uint8)
-
-#     img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Convert to grayscale
-#     img = img / 255.0  # Normalize pixel values to the range [0, 1]
-#     img = np.expand_dims(img, axis=-1)  # Add channel dimension
-#     img = np.expand_dims(img, axis=0)  # Add batch dimension
-#     return img
-
-# Function to preprocess a new image while keeping the original size
-def preprocess_image(image_path):
-    img = cv2.imread(image_path, 0)  # Load the image in grayscale
-    img = img / 255.  # Normalize the pixel values
-    img = np.expand_dims(img, axis=-1)  # Expand dimensions to fit the model input shape
-    img = np.expand_dims(img, axis=0)  # Add batch dimension
-    return img
 
 @app.post("/extractAndDenoise-document/")
 async def extract_denoise_document_endpoint(file: UploadFile = File(...)):
@@ -225,7 +211,7 @@ async def extract_denoise_document_endpoint(file: UploadFile = File(...)):
     # Perform the document extraction
     extracted_image = extract_document(image, trained_model)
     output_path = "extractedImages/extracted_document.jpg"
-    #cv2.imwrite(output_path, extracted_image.astype('uint8'))
+    cv2.imwrite(output_path, extracted_image.astype('uint8'))
     
     # Rebuild and load the denoising model using functional API
     input_shape = (None, None, 1)
@@ -259,9 +245,6 @@ async def extract_denoise_document_endpoint(file: UploadFile = File(...)):
 
     return FileResponse(denoised_image_path, media_type="image/jpeg")
 
-
-
-
 @app.post("/extract-text/")
 async def extract_text(file: UploadFile = File(...)):
     # Read the image file into memory
@@ -273,23 +256,68 @@ async def extract_text(file: UploadFile = File(...)):
     # Return the extracted text as a JSON response
     return JSONResponse(content={"extracted_text": extracted_text})
 
- 
-import uvicorn
 
 
-@app.post("/extract-text/")
-async def extract_text(file: UploadFile = File(...)):
-    # Read the image file into memory
-    image_data = await file.read()
+@app.post("/pipeline-document/")
+async def pipeline_endpoint(file: UploadFile = File(...)):
+    try:
+        # Generate a unique ID for the image
+        unique_id = str(uuid4())
 
-    # Use the OCR function to extract text
-    extracted_text = ocr_space_file(image_data)
+        contents = await file.read()
+        nparr = np.frombuffer(contents, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)[:, :, ::-1]
 
-    # Return the extracted text as a JSON response
-    return JSONResponse(content={"extracted_text": extracted_text})
+        # Load the document extraction model
+        model_path = "../car-penalties/modeling/model_r50_iou_mix_2C020.pth"  # Update this path to your model
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        trained_model = load_model(num_classes=2, checkpoint_path=model_path, device=device)
 
- 
-import uvicorn
+        # Perform the document extraction
+        extracted_image = extract_document(image, trained_model)
+        output_path = f"extractedImages/extracted_document_{unique_id}.jpg"
+        cv2.imwrite(output_path, extracted_image.astype('uint8'))
+
+        # Rebuild and load the denoising model using functional API
+        input_shape = (None, None, 1)
+        inputs = Input(shape=input_shape)
+
+        # Encoder
+        x = Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same', name='Conv1')(inputs)
+        x = BatchNormalization(name='BN1')(x)
+        x = MaxPooling2D((2, 2), padding='same', name='pool1')(x)
+
+        # Decoder
+        x = Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same', name='Conv2')(x)
+        x = UpSampling2D((2, 2), name='upsample1')(x)
+        outputs = Conv2D(filters=1, kernel_size=(3, 3), activation='sigmoid', padding='same', name='Conv3')(x)
+
+        model = Model(inputs, outputs)
+        model.load_weights('../models/denoising_autoencoder_80.h5')  # Ensure this path is correct
+
+        # Preprocess the extracted image
+        preprocessed_image = preprocess_image(output_path)
+
+        # Denoise the image
+        denoised_image = model.predict(preprocessed_image)
+
+        # Remove the batch dimension and channel dimension
+        denoised_image = np.squeeze(denoised_image)
+
+        # Save the denoised image with the unique ID
+        denoised_image_path = f"denoisedImages/denoised_document_{unique_id}.jpg"
+        cv2.imwrite(denoised_image_path, denoised_image * 255)  # Convert back to 0-255 range and save
+
+        # Use the OCR function to extract text
+        with open(denoised_image_path, "rb") as image_file:
+            extracted_text = ocr_space_file(image_file)
+
+        # Return the extracted text as JSON
+        return JSONResponse(content={"extracted_text": extracted_text})
+
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
 
 # To run the FastAPI app, use Uvicorn
 if __name__ == "__main__":
