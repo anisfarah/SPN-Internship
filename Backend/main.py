@@ -1,7 +1,7 @@
 import os
 from uuid import uuid4
 import cv2
-from fastapi import FastAPI, File, UploadFile
+from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse,JSONResponse
 import os,io
 import gc
@@ -22,10 +22,29 @@ from torchvision.models.segmentation import deeplabv3_mobilenet_v3_large
 import requests
 import json
 import uvicorn
+from config import collection
+from database.schemas import allPenalties
+from database.models import Penalty
 
 
 app = FastAPI()
+router = APIRouter()
 
+
+
+@router.get("/AllPenalties")
+async def get_all_penalties():
+    data= collection.find( )
+    return allPenalties(data)
+
+@router.post("/")
+async def create_penalty(new_penalty:Penalty):
+    try:
+        resp= collection.insert_one(dict(new_penalty))
+        return {"Status_code":200, "id":str(resp.inserted_id)}
+    except Exception as e: 
+        return HTTPException(status_code=500, detail=f"Some erroe occured {e}")
+              
 # Use the function we refactored earlier
 def order_points(pts):
     rect = np.zeros((4, 2), dtype="float32")
@@ -318,7 +337,7 @@ async def pipeline_endpoint(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-
+app.include_router(router)
 # To run the FastAPI app, use Uvicorn
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
