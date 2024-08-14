@@ -25,26 +25,52 @@ import uvicorn
 from config import collection
 from database.schemas import allPenalties
 from database.models import Penalty
-
+from bson.objectid import ObjectId
 
 app = FastAPI()
 router = APIRouter()
 
 
-
+#Get Penalties
 @router.get("/AllPenalties")
 async def get_all_penalties():
     data= collection.find( )
     return allPenalties(data)
 
-@router.post("/")
+#Add Penalty
+@router.post("/AddPenalty")
 async def create_penalty(new_penalty:Penalty):
     try:
         resp= collection.insert_one(dict(new_penalty))
         return {"Status_code":200, "id":str(resp.inserted_id)}
     except Exception as e: 
         return HTTPException(status_code=500, detail=f"Some erroe occured {e}")
-              
+
+#Update Penalty
+@router.put("/{penalty_id}")
+async def update_penalty(penalty_id:str,updated_penalty:Penalty):
+    try:
+        id= ObjectId(penalty_id)
+        penalty_exist=collection.find_one({"_id":id})
+        if not penalty_exist:
+            return HTTPException(status_code=404, detail=f"Penalty does not exist")
+        resp=collection.update_one({"_id":id}, {"$set":dict(updated_penalty)})
+        return {"status code":200, "message":"penalty updated successfully"}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=f"Some erroe occured {e}")
+
+#Delete Penalty
+@router.delete("/{penalty_id}")
+async def delete_penalty(penalty_id:str):
+    try:
+        id= ObjectId(penalty_id)
+        penalty_exist=collection.find_one({"_id":id})
+        if not penalty_exist:
+            return HTTPException(status_code=404, detail=f"Penalty does not exist")
+        resp=collection.delete_one({"_id":id})
+        return {"status code":200, "message":"penalty updated successfully"}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=f"Some erroe occured {e}")
 # Use the function we refactored earlier
 def order_points(pts):
     rect = np.zeros((4, 2), dtype="float32")
