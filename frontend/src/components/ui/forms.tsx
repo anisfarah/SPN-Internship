@@ -191,7 +191,6 @@ function DynamicForm(props: DynamicFormProps): JSX.Element {
       withTabs={props.withTabs}
       className={props?.className}
       action={formAction}
-      // moreSpace={props.moreSpace}
     >
       {props.withSteps && (
         <div className="-mt-10 flex flex-auto items-center justify-start">
@@ -203,8 +202,8 @@ function DynamicForm(props: DynamicFormProps): JSX.Element {
       {props.withSteps && props.titles ? (
         props.titles.map((title, index) => (
           <DynamicInputs
-            invisible={index != step}
-            key={`${title}-${index}`}
+            key={index}
+            invisible={index !== step}
             isClicked={isClicked}
             inputConfig={props.config[index]}
             errors={state?.errors || {}}
@@ -213,8 +212,8 @@ function DynamicForm(props: DynamicFormProps): JSX.Element {
       ) : props?.withTabs && props.titles ? (
         props?.titles.map((title, index) => (
           <DynamicInputs
-            invisible={title != tab}
-            key={`${title}-${index}`}
+            key={index}
+            invisible={title !== tab}
             isClicked={isClicked}
             inputConfig={props.config[index]}
             errors={state?.errors || {}}
@@ -266,7 +265,7 @@ function DynamicForm(props: DynamicFormProps): JSX.Element {
       </div>
     </Form>
   );
-}
+}  
 function DynamicFormWithTabs(props: DynamicFormProps): JSX.Element {
   const q = useSearchParams();
   const { setAlert } = useAlert();
