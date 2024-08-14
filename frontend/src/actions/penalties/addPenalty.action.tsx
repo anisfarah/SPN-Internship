@@ -12,24 +12,33 @@ export const addPenaltyAction = async (
 ): Promise<any> => {
   let addPenaltyResponse = initialState;
 
-  console.log('🚀 ~ :', formData);
-  const formDataObject = processFormData(formData, addPenaltyConfig);
+  // Define formDataObject as a record with string keys and any values
+  const formDataObject: Record<string, any> = {};
 
-  let location = formDataObject.locationPenalty;
+  // Convert FormData to a plain object
+  formData.forEach((value, key) => {
+    formDataObject[key] = value || null; // Set to null if empty
+  });
 
+  console.log('🚀 ~ Converted FormData Object:', formDataObject);
+
+  // Ensure numerical fields are converted
   if (formDataObject.InfractionNumberPenalty) {
     formDataObject.InfractionNumberPenalty = Number(formDataObject.InfractionNumberPenalty);
   }
 
+  if (formDataObject.AmountPenalty) {
+    formDataObject.AmountPenalty = Number(formDataObject.AmountPenalty);
+  }
 
-  // Remove any unnecessary fields
+  // Remove empty or null fields if you want to exclude them
   for (const key in formDataObject) {
-    if (formDataObject[key] === '' || formDataObject[key] === null) {
+    if (formDataObject[key] === null) {
       delete formDataObject[key];
     }
   }
 
-  // Validate the data
+  // Validate the processed data
   const formValidation = validateData(formDataObject, AddPenaltySchema);
 
   if (formValidation !== null) {
@@ -37,16 +46,17 @@ export const addPenaltyAction = async (
   }
 
   try {
-    // Call API to add penalty
+    // Simulate API call to add penalty (Replace with real API call)
     addPenaltyResponse = { status: 200, data: formDataObject };
   } catch (error) {
     return { status: 500, alert: 'Something went wrong' };
   }
 
   if (addPenaltyResponse.status === 200 || addPenaltyResponse.status === 201) {
+    console.log('🚀 ~ Penalty added successfully:', formDataObject);
     redirect('/cars-limousines/penalties');
   } else {
+    console.log('🚀 ~ Error adding penalty:', addPenaltyResponse.alert);
     return addPenaltyResponse;
   }
 };
-

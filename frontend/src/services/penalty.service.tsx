@@ -1,86 +1,48 @@
 'use server';
-import useFetch from '@/hooks/useFetch';
-import { cookies } from 'next/headers';
 
-const AddPenalty = async (penaltyData: any) => {
-  const url = `${process.env.SERVER_USERS}/v1/penalties/`;
-  const accessToken = cookies().get('accessToken')?.value;
+import processFormData from '@/utils/cleanFormData';
+import validateData from '@/utils/validateSchema';
+import AddPenaltySchema from '@/validations/penalties/addPenalty.validation';
+import { redirect } from 'next/navigation';
 
-  const { response, status } = await useFetch(url, {
-    method: 'POST',
-    body: JSON.stringify({ penaltyData }),
-    headers: {
-      Cookie: `accessToken=${accessToken};`,
-      'Content-Type': 'application/json'
-    }
-  });
+export const addPenaltyAction = async (
+  addPenaltyConfig: any,
+  initialState: any,
+  formData: FormData
+): Promise<any> => {
+  let addPenaltyResponse = initialState;
 
-  if (response?.error) {
-    return {
-      status,
-      alert: `${response?.error || 'Something went wrong, please try again later'}`
-    };
+  console.log('🚀 ~ :', formData);
+  const formDataObject = processFormData(formData, addPenaltyConfig);
+
+  if (formDataObject.InfractionNumberPenalty) {
+    formDataObject.InfractionNumberPenalty = Number(formDataObject.InfractionNumberPenalty);
   }
 
-  return { status, alert: response?.message || response?.error };
-};
-
-const UpdatePenaltyInfo = async (penaltyData: any, penaltyId: string) => {
-  const url = `${process.env.SERVER_USERS}/v1/penalties/updateInfo/${penaltyId}`;
-  const accessToken = cookies().get('accessToken')?.value;
-
-  const { response, status } = await useFetch(url, {
-    method: 'PUT',
-    body: JSON.stringify(penaltyData),
-    headers: {
-      Cookie: `accessToken=${accessToken};`,
-      'Content-Type': 'application/json'
-    }
-  });
-  if (response?.error) {
-    return {
-      status,
-      alert: `${response?.error || 'Something went wrong, please try again later'}`
-    };
-  }
-
-  return { status, alert: response?.message || response?.error };
-};
-
-const FindAllPenalties = async (queryParams: Record<string, string[]>) => {
-  const queryString = new URLSearchParams();
-
-  for (const key in queryParams) {
-    if (Array.isArray(queryParams[key])) {
-      queryParams[key].forEach((value: string) => queryString.append(key, value));
-    } else {
-      queryString.append(key, queryParams[key]);
+  // Remove any unnecessary fields
+  for (const key in formDataObject) {
+    if (formDataObject[key] === '' || formDataObject[key] === null) {
+      delete formDataObject[key];
     }
   }
-  const accessToken = cookies().get('accessToken')?.value;
 
-  const url = `${process.env.SERVER_USERS}/v1/penalties/?${queryString.toString()}`;
+  // Validate the data
+  const formValidation = validateData(formDataObject, AddPenaltySchema);
 
-  const { response, status } = await useFetch(url, {
-    method: 'GET',
-    headers: {
-      Cookie: `accessToken=${accessToken};`,
-      'Content-Type': 'application/json'
-    }
-  });
-
-  if (response?.error) {
-    return {
-      status,
-      alert: `${response?.error || 'Something went wrong, please try again later'}`
-    };
+  if (formValidation !== null) {
+    return formValidation;
   }
 
-  return { response, alert: response?.message || response?.error };
-};
+  try {
+    // Call API to add penalty
+    addPenaltyResponse = { status: 200, data: formDataObject };
+  } catch (error) {
+    return { status: 500, alert: 'Something went wrong' };
+  }
 
-export {
-  AddPenalty,
-  UpdatePenaltyInfo,
-  FindAllPenalties
+  if (addPenaltyResponse.status === 200 || addPenaltyResponse.status === 201) {
+    redirect('/cars-limousines/penalties');
+  } else {
+    return addPenaltyResponse;
+  }
 };

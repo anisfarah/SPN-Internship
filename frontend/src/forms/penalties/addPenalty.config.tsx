@@ -64,11 +64,4 @@ export const getAddPenaltyConfig = async () => {
   ];
 };
 
-type FormFieldConfig = {
-  label: string;
-  type: string;
-  required: boolean;
-  name: string;
-  style?: React.CSSProperties;
-  fields?: FormFieldConfig[];
-};
+

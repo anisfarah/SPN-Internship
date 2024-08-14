@@ -1,44 +1,75 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation'; // Updated import to get query params
+import { useRouter, useSearchParams } from 'next/navigation';
 import { addPenaltyAction } from '@/actions/penalties/addPenalty.action';
 import { getAddPenaltyConfig } from '@/forms/penalties/addPenalty.config';
-import Steps from '@/components/ui/steps'; 
+import { getUploadPenaltyConfig } from '@/forms/penalties/uploadPenalty.config';
 import Container from '@/components/ui/containers';
-import { DynamicForm } from '@/components/ui/forms';
+import { DynamicFormWithSteps } from '@/components/ui/forms';
 
 const AddPenalty = () => {
-  const searchParams = useSearchParams(); // Get search params
-  const stepParam = parseInt(searchParams.get('step') || '0', 10); // Get 'step' from the URL, default to 0
-  const [currentStep, setCurrentStep] = useState(stepParam + 1);
-  
-  // Use a generic type for the state
-  const [penaltyConfig, setPenaltyConfig] = useState<any[]>(); 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const stepParam = parseInt(searchParams.get('step') || '0', 10);
+  const [currentStep, setCurrentStep] = useState(stepParam);
+  const [penaltyConfig, setPenaltyConfig] = useState<any[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
-    const fetchConfig = async () => {
-      const config = await getAddPenaltyConfig();
-      setPenaltyConfig(config);
+    const fetchConfigs = async () => {
+      const uploadConfig = await getUploadPenaltyConfig();
+      const formConfig = await getAddPenaltyConfig();
+      setPenaltyConfig([uploadConfig, formConfig]);
     };
 
-    fetchConfig();
+    fetchConfigs();
   }, []);
 
   const stepsTitles = ['Upload', 'Verification'];
 
-  if (!penaltyConfig) {
+  const handleFileUpload = async (initialState: any, formData: FormData) => {
+    setIsUploading(true);
+
+    // Simulate the upload process
+    setTimeout(() => {
+      setIsUploading(false);
+      setCurrentStep(1); // Move to the next step (form)
+      router.push(`?step=1`);
+    }, 1000);
+  };
+
+  const handleFormSubmit = async (initialState: any, formData: FormData) => {
+    // Log all entries in FormData to see what is being captured
+    formData.forEach((value, key) => {
+      console.log(`FormData Key: ${key}, Value: ${value}`);
+    });
+
+    // Pass formData to the addPenaltyAction function
+    const response = await addPenaltyAction(penaltyConfig[1], initialState, formData);
+
+    // Handle the response
+    if (response.status === 200 || response.status === 201) {
+      console.log('Penalty added successfully:', response.data);
+      router.push('/cars-limousines/penalties');
+    } else {
+      console.log('Error adding penalty:', response.alert);
+    }
+  };
+
+  if (!penaltyConfig.length) {
     return <div>Loading...</div>;
   }
 
-  const addPenaltyWithConfigAction = addPenaltyAction.bind(null, penaltyConfig);
-
   return (
     <Container desktopOnly>
-     <div className="flex justify-center mb-8">
-        <Steps titles={stepsTitles} step={currentStep} />
-      </div>
-
-      <DynamicForm config={penaltyConfig} action={addPenaltyWithConfigAction} />
+      <DynamicFormWithSteps
+        config={penaltyConfig}
+        action={currentStep === 0 ? handleFileUpload : handleFormSubmit}
+        titles={stepsTitles}
+        stepContainerFitWidth
+        fullWidth
+        className="w-full max-w-md mx-auto"
+      />
     </Container>
   );
 };

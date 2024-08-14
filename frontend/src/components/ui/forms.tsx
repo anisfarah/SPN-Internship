@@ -57,6 +57,84 @@ function Form(props: FormProps): JSX.Element {
   );
 }
 
+// function DynamicFormWithSteps(props: DynamicFormWithStepsProps): JSX.Element {
+//   const router = useRouter();
+//   const pathname = usePathname();
+//   const query = useSearchParams();
+//   const { setAlert } = useAlert();
+//   const [isClicked, setIsClicked] = useState(false);
+
+//   const [state, formAction] = useFormState(props.action, {
+//     alert: '',
+//     status: null,
+//     errors: {}
+//   });
+
+//   const changeStep = () => {
+//     const nextStep = step + 1;
+//     router.push(pathname + '?' + 'step=' + nextStep);
+//   };
+//   const step = parseInt(query.get('step') ?? '0', 10);
+//   useEffect(() => {
+//     if (state) {
+//       // if (state.status === null) {
+//       //   router.push(pathname + '?' + 'step=' + '0');
+//       // }
+//       if (isClicked && state.status === 100 && props?.titles && step < props?.titles?.length - 1) {
+//         setIsClicked(false);
+//         changeStep();
+//       } else {
+//         setAlert({ message: state.alert, status: state.status });
+//       }
+//     }
+//   }, [state, setAlert]);
+
+//   const handleClick = () => {
+//     setIsClicked(true);
+//     // if (Object.keys(state?.errors).length) {
+//     //   console.log('🚀 ~ handleClick ~ DO not go to next step');
+//     // }
+//     // if (props?.titles && step < props?.titles?.length - 1) {
+//     //   changeStep();
+//     // }
+//   };
+
+//   return (
+//     <div className="relative flex flex-col gap-2">
+//       {props.titles?.length && (
+//         <StepsContainer stepContainerFitWidth={props.stepContainerFitWidth}>
+//           <Steps titles={props.titles || []} step={step || 0} />
+//         </StepsContainer>
+//       )}
+//       <Form
+//         fullWidth={props.fullWidth}
+//         className={props?.className}
+//         action={formAction}
+//         // moreSpace={props.moreSpace}
+//       >
+//         {props.titles.map((title, index) => (
+//           <DynamicInputs
+//             key={`${title}-${index}`}
+//             invisible={index != step}
+//             isClicked={isClicked}
+//             inputConfig={props.config[index]}
+//             errors={state?.errors || {}}
+//           />
+//         ))}
+//         <div className="mx-auto my-6 flex h-10 w-48 items-center justify-center">
+//           <Button
+//             onClick={handleClick}
+//             type={'submit'}
+//             // type={step < props.titles?.length - 1 ? 'button' : 'submit'}
+//             withArrow
+//             label={step < props.titles?.length - 1 ? 'Next' : 'Confirm'}
+//           />
+//         </div>
+//       </Form>
+//     </div>
+//   );
+// }
+
 function DynamicFormWithSteps(props: DynamicFormWithStepsProps): JSX.Element {
   const router = useRouter();
   const pathname = usePathname();
@@ -74,29 +152,19 @@ function DynamicFormWithSteps(props: DynamicFormWithStepsProps): JSX.Element {
     const nextStep = step + 1;
     router.push(pathname + '?' + 'step=' + nextStep);
   };
+  
   const step = parseInt(query.get('step') ?? '0', 10);
-  useEffect(() => {
-    if (state) {
-      // if (state.status === null) {
-      //   router.push(pathname + '?' + 'step=' + '0');
-      // }
-      if (isClicked && state.status === 100 && props?.titles && step < props?.titles?.length - 1) {
-        setIsClicked(false);
-        changeStep();
-      } else {
-        setAlert({ message: state.alert, status: state.status });
-      }
-    }
-  }, [state, setAlert]);
 
-  const handleClick = () => {
+  const handleClick = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsClicked(true);
-    // if (Object.keys(state?.errors).length) {
-    //   console.log('🚀 ~ handleClick ~ DO not go to next step');
-    // }
-    // if (props?.titles && step < props?.titles?.length - 1) {
-    //   changeStep();
-    // }
+
+    if (step < props.titles?.length - 1) {
+      // Create FormData manually from the form
+      const formData = new FormData(event.currentTarget);
+      props.action(null, formData); // Pass null as initialState and FormData to the action
+      changeStep();
+    }
   };
 
   return (
@@ -110,7 +178,7 @@ function DynamicFormWithSteps(props: DynamicFormWithStepsProps): JSX.Element {
         fullWidth={props.fullWidth}
         className={props?.className}
         action={formAction}
-        // moreSpace={props.moreSpace}
+        onSubmit={handleClick}
       >
         {props.titles.map((title, index) => (
           <DynamicInputs
@@ -123,9 +191,7 @@ function DynamicFormWithSteps(props: DynamicFormWithStepsProps): JSX.Element {
         ))}
         <div className="mx-auto my-6 flex h-10 w-48 items-center justify-center">
           <Button
-            onClick={handleClick}
-            type={'submit'}
-            // type={step < props.titles?.length - 1 ? 'button' : 'submit'}
+            type="submit"
             withArrow
             label={step < props.titles?.length - 1 ? 'Next' : 'Confirm'}
           />
@@ -134,6 +200,7 @@ function DynamicFormWithSteps(props: DynamicFormWithStepsProps): JSX.Element {
     </div>
   );
 }
+
 
 function DynamicForm(props: DynamicFormProps): JSX.Element {
   const router = useRouter();
