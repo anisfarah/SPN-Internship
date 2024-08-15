@@ -26,10 +26,20 @@ from config import collection
 from database.schemas import allPenalties
 from database.models import Penalty
 from bson.objectid import ObjectId
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 router = APIRouter()
 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4000"],  # You can allow specific origins or ["*"] to allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # You can restrict methods if needed, e.g., ["GET", "POST"]
+    allow_headers=["*"],  # You can restrict headers if needed
+)
 
 #Get Penalties
 @router.get("/AllPenalties")
