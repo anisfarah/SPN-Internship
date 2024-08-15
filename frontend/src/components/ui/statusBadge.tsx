@@ -17,7 +17,10 @@ const statusColorClasses = {
   DENIED: 'bg-redAccent text-red',
   CANCELLED: 'bg-pinkAccent text-pink',
   EXPIRED: 'bg-grayAccent text-gray',
-  DRAFT: 'bg-orangeAccent text-orange'
+  DRAFT: 'bg-orangeAccent text-orange',
+  PAID: 'bg-greenAccent text-green',
+  UNPAID: 'bg-redAccent text-red',
+  IN_PROGRESS: 'bg-yellowAccent text-yellow'
 };
 
 const StatusBadge = ({
@@ -37,7 +40,8 @@ const StatusBadge = ({
     | 'DENIED'
     | 'CANCELLED'
     | 'EXPIRED'
-    | 'PENDING';
+    | 'PENDING' |
+    'PAID' | 'UNPAID' | 'IN_PROGRESS';
 }) => {
   const colorClass = statusColorClasses[status] || 'bg-grayAccent text-gray';
   const formattedStatus = formatStatusText(status);

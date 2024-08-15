@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { useEffect, useState } from 'react';
 import AddIcon from '@/components/icons/addIcon';
 import { RoundedButton } from '@/components/ui/buttons';
@@ -6,6 +6,11 @@ import Container, { DesktopContainer, SearchBarContainer } from '@/components/ui
 import { Subtitle } from '@/components/ui/texts';
 import Link from 'next/link';
 import { SearchInput } from '@/components/ui/inputs';
+import Table, { Column, Row } from '@/components/ui/tables';
+import Pagination from '@/components/ui/pagination';
+import { EmptyDataComponent } from '@/components/ui/error';
+import { useSearchParams } from 'next/navigation';
+import StatusBadge from '@/components/ui/statusBadge'; // Import the StatusBadge component
 
 // Define the Penalty type inline
 type Penalty = {
@@ -18,11 +23,14 @@ type Penalty = {
   Infraction_date: string; // Could be Date if processed accordingly
   Amount: number;
   Currency: string;
-  Status: string;
+  Status: 'PAID' | 'UNPAID' | 'IN_PROGRESS'; // Define possible status values
 };
 
 export default function Penalties() {
   const [penalties, setPenalties] = useState<Penalty[]>([]);
+  const searchParams = useSearchParams();
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const itemsPerPage = 5;
 
   // Fetch the penalties from the FastAPI backend
   useEffect(() => {
@@ -42,6 +50,8 @@ export default function Penalties() {
     fetchPenalties();
   }, []);
 
+  const displayedPenalties = penalties.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <section className="relative flex size-full flex-col items-center">
       <DesktopContainer>
@@ -57,34 +67,31 @@ export default function Penalties() {
               </Link>
             </div>
           </SearchBarContainer>
-          <table className="table-auto w-full mt-4">
-            <thead>
-              <tr>
-                <th className="px-4 py-2">Number</th>
-                <th className="px-4 py-2">Type</th>
-                <th className="px-4 py-2">Location</th>
-                <th className="px-4 py-2">Infraction Date</th>
-                <th className="px-4 py-2">Car</th>
-                <th className="px-4 py-2">Amount</th>
-                <th className="px-4 py-2">Currency</th>
-                <th className="px-4 py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {penalties.map((penalty, index) => (
-                <tr key={penalty.id} className="border-t">
-                  <td className="px-4 py-2">{index + 1}</td>
-                  <td className="px-4 py-2">{penalty.Type}</td>
-                  <td className="px-4 py-2">{penalty.Location}</td>
-                  <td className="px-4 py-2">{new Date(penalty.Infraction_date).toLocaleDateString()}</td>
-                  <td className="px-4 py-2">{penalty.Car}</td>
-                  <td className="px-4 py-2">{penalty.Amount}</td>
-                  <td className="px-4 py-2">{penalty.Currency}</td>
-                  <td className="px-4 py-2">{penalty.Status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {penalties.length ? (
+            <div className="flex size-full w-full flex-col justify-between p-6">
+              <Table categories={['Number', 'Type', 'Location', 'Infraction Date', 'Car', 'Amount', 'Currency', 'Status']}>
+                {displayedPenalties.map((penalty, index) => (
+                  <Row key={penalty.id}>
+                    <Column>{(currentPage - 1) * itemsPerPage + index + 1}</Column>
+                    <Column>{penalty.Type}</Column>
+                    <Column>{penalty.Location}</Column>
+                    <Column>{new Date(penalty.Infraction_date).toLocaleDateString()}</Column>
+                    <Column>{penalty.Car}</Column>
+                    <Column>{penalty.Amount}</Column>
+                    <Column>{penalty.Currency}</Column>
+                    <Column>
+                    <StatusBadge status={'UNPAID'} />                    </Column>
+                  </Row>
+                ))}
+              </Table>
+              <Pagination
+                totalCount={penalties.length}
+                pageSize={itemsPerPage}
+              />
+            </div>
+          ) : (
+            <EmptyDataComponent />
+          )}
         </Container>
       </DesktopContainer>
     </section>
