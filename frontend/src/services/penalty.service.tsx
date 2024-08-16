@@ -3,26 +3,26 @@ import useFetch from '@/hooks/useFetch';
 import { cookies } from 'next/headers';
 
 const AddPenalty = async (penaltyData: any) => {
-  const url = `${process.env.SERVER_USERS}/v1/penalties/`;
-  const accessToken = cookies().get('accessToken')?.value;
+  const url = `http://localhost:8000/AddPenalty`;
 
   const { response, status } = await useFetch(url, {
     method: 'POST',
-    body: JSON.stringify({ penaltyData }),
+    body: JSON.stringify(penaltyData),  // Send the structured JSON object directly
     headers: {
-      Cookie: `accessToken=${accessToken};`,
       'Content-Type': 'application/json'
     }
   });
 
-  if (response?.error) {
+  const resolvedStatus = status ?? 500;  // Default to 500 if status is null or undefined
+
+  if (resolvedStatus >= 400 || response?.error) {
     return {
-      status,
-      alert: `${response?.error || 'Something went wrong, please try again later'}`
+      status: resolvedStatus,
+      alert: response?.error || 'Something went wrong, please try again later'
     };
   }
 
-  return { status, alert: response?.message || response?.error };
+  return { status: resolvedStatus, alert: response?.message || 'Penalty added successfully' };
 };
 
 const UpdatePenaltyInfo = async (penaltyData: any, penaltyId: string) => {
@@ -31,20 +31,23 @@ const UpdatePenaltyInfo = async (penaltyData: any, penaltyId: string) => {
 
   const { response, status } = await useFetch(url, {
     method: 'PUT',
-    body: JSON.stringify(penaltyData),
+    body: JSON.stringify(penaltyData),  // Send the structured JSON object directly
     headers: {
       Cookie: `accessToken=${accessToken};`,
       'Content-Type': 'application/json'
     }
   });
-  if (response?.error) {
+
+  const resolvedStatus = status ?? 500;
+
+  if (resolvedStatus >= 400 || response?.error) {
     return {
-      status,
-      alert: `${response?.error || 'Something went wrong, please try again later'}`
+      status: resolvedStatus,
+      alert: response?.error || 'Something went wrong, please try again later'
     };
   }
 
-  return { status, alert: response?.message || response?.error };
+  return { status: resolvedStatus, alert: response?.message || 'Penalty information updated successfully' };
 };
 
 const FindAllPenalties = async (queryParams: Record<string, string[]>) => {
@@ -57,8 +60,8 @@ const FindAllPenalties = async (queryParams: Record<string, string[]>) => {
       queryString.append(key, queryParams[key]);
     }
   }
-  const accessToken = cookies().get('accessToken')?.value;
 
+  const accessToken = cookies().get('accessToken')?.value;
   const url = `${process.env.SERVER_USERS}/v1/penalties/?${queryString.toString()}`;
 
   const { response, status } = await useFetch(url, {
@@ -69,14 +72,16 @@ const FindAllPenalties = async (queryParams: Record<string, string[]>) => {
     }
   });
 
-  if (response?.error) {
+  const resolvedStatus = status ?? 500;
+
+  if (resolvedStatus >= 400 || response?.error) {
     return {
-      status,
-      alert: `${response?.error || 'Something went wrong, please try again later'}`
+      status: resolvedStatus,
+      alert: response?.error || 'Something went wrong, please try again later'
     };
   }
 
-  return { response, alert: response?.message || response?.error };
+  return { response, alert: response?.message || 'Penalties retrieved successfully' };
 };
 
 export {
