@@ -193,7 +193,7 @@ function DynamicFormWithSteps(props: DynamicFormWithStepsProps): JSX.Element {
           <Button
             type="submit"
             withArrow
-            label={step < props.titles?.length - 1 ? 'Next' : 'Confirm'}
+            label={step < props.titles?.length - 1 ? 'Upload' : 'Confirm'}
           />
         </div>
       </Form>

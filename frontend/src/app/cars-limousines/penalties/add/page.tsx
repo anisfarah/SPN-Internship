@@ -19,10 +19,11 @@ export default async function AddPenalty({
     <Container desktopOnly>
       <DynamicFormWithSteps
         className="w-full max-w-md mx-auto"
+        stepContainerFitWidth
         titles={['Upload', 'Verification']}
         config={[uploadPenaltyConfig, addPenaltyConfig]}
         action={addPenaltyWithStepAction}
-        step={step}  // Ensure this prop is needed
+        step={step}
       />
     </Container>
   );

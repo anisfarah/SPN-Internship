@@ -80,7 +80,7 @@ export default function Penalties() {
                     <Column>{penalty.Amount}</Column>
                     <Column>{penalty.Currency}</Column>
                     <Column>
-                    <StatusBadge status={'UNPAID'} />                    </Column>
+                      <StatusBadge status={'UNPAID'} />                    </Column>
                   </Row>
                 ))}
               </Table>

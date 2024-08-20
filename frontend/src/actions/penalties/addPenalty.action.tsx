@@ -1,83 +1,6 @@
-
-// 'use server';
-
-// import { AddPenalty } from '@/services/penalty.service';  // Import your service
-// import validateData from '@/utils/validateSchema';
-// import AddPenaltySchema from '@/validations/penalties/addPenalty.validation';
-// import { redirect } from 'next/navigation';
-
-// export const addPenaltyAction = async (
-//   addPenaltyConfig: any,
-//   initialState: any,
-//   formData: FormData
-// ): Promise<any> => {
-//   let addPenaltyResponse;
-
-//   // Convert FormData to a plain object, excluding any files like penaltyDocument
-//   const formDataObject: Record<string, any> = {};
-//   formData.forEach((value, key) => {
-//     if (key !== 'penaltyDocument') {  // Exclude the penaltyDocument field
-//       formDataObject[key] = value || null; // Set to null if empty
-//     }
-//   });
-
-//   console.log('🚀 ~ Converted FormData Object:', formDataObject);
-
-//   // Ensure numerical fields are converted
-//   if (formDataObject.InfractionNumberPenalty) {
-//     formDataObject.InfractionNumberPenalty = Number(formDataObject.InfractionNumberPenalty);
-//   }
-//   if (formDataObject.AmountPenalty) {
-//     formDataObject.AmountPenalty = Number(formDataObject.AmountPenalty);
-//   }
-
-//   // Remove empty or null fields if you want to exclude them
-//   for (const key in formDataObject) {
-//     if (formDataObject[key] === null) {
-//       delete formDataObject[key];
-//     }
-//   }
-
-//   // Create the JSON object to send, following the structure expected by FastAPI
-//   const penaltyData = {
-//     Type: formDataObject.typePenalty,
-//     Location: formDataObject.locationPenalty,
-//     Infraction_number: formDataObject.InfractionNumberPenalty,
-//     Car: formDataObject.CarPenalty,
-//     Car_plate_number: formDataObject.CarPlateNumberPenalty || '',  // Optional field with fallback
-//     Infraction_date: formDataObject.InfractionDatePenalty || new Date().toISOString(),  // Use current date if not provided
-//     Amount: formDataObject.AmountPenalty,
-//     Currency: formDataObject.CurrencyPenalty
-//   };
-
-//   console.log('🚀 ~ Penalty Data to be Sent:', penaltyData);
-
-//   // Validate the processed data
-//   const formValidation = validateData(penaltyData, AddPenaltySchema);
-//   if (formValidation !== null) {
-//     return formValidation;
-//   }
-
-//   try {
-//     // Call your service to add penalty
-//     addPenaltyResponse = await AddPenalty(penaltyData);
-//   } catch (error) {
-//     return { status: 500, alert: 'An unexpected error occurred.' };
-//   }
-
-//   if (addPenaltyResponse.status === 200 || addPenaltyResponse.status === 201) {
-//     console.log('🚀 ~ Penalty added successfully:', penaltyData);
-//     redirect('/cars-limousines/penalties');
-//   } else {
-//     console.log('🚀 ~ Error adding penalty:', addPenaltyResponse.alert);
-//     console.log('🚀 ~ Full Response:', addPenaltyResponse);  // Log the full response for debugging
-//     return addPenaltyResponse;
-//   }
-// };
-
 'use server';
 
-import { AddPenalty } from '@/services/penalty.service';
+import { extractDocument, extractText, AddPenalty } from '@/services/penalty.service';
 import validateData from '@/utils/validateSchema';
 import AddPenaltySchema from '@/validations/penalties/addPenalty.validation';
 import { redirect } from 'next/navigation';
@@ -89,51 +12,76 @@ export const addPenaltyAction = async (
 ): Promise<any> => {
   let addPenaltyResponse;
 
-  // Convert FormData to an object
-  const formDataObject: Record<string, any> = {};
-  formData.forEach((value, key) => {
-    formDataObject[key] = value || null;
-  });
-
-  // Convert numerical fields
-  if (formDataObject.InfractionNumberPenalty) {
-    formDataObject.InfractionNumberPenalty = Number(formDataObject.InfractionNumberPenalty);
-  }
-  if (formDataObject.AmountPenalty) {
-    formDataObject.AmountPenalty = Number(formDataObject.AmountPenalty);
-  }
-
-  // Remove empty fields
-  for (const key in formDataObject) {
-    if (formDataObject[key] === null) {
-      delete formDataObject[key];
-    }
-  }
-
-  // Show the converted FormData object in the console
-  console.log('🚀 ~ Converted FormData Object:', formDataObject);
-
   if (step === 0) {
+    const penaltyDocument = formData.get('penaltyDocument');
+
+    // Validate the file object by checking for typical File properties
+    if (!penaltyDocument || typeof penaltyDocument !== 'object' || !('name' in penaltyDocument)) {
+      console.error('FormData does not contain a valid file under the key "penaltyDocument".');
+      return { status: null, alert: 'Please upload a valid document.' };
+    }
+
+    const extractedDocument = await extractDocument(penaltyDocument as File);
+    if (!extractedDocument) {
+      return { status: null, alert: 'Document extraction failed' };
+    }
+
+    // Pass the extracted document Blob to the extractText function
+    const extractedText = await extractText(extractedDocument);
+    if (!extractedText) {
+      return { status: null, alert: 'Text extraction failed' };
+    }
+
+    console.log('Extracted text:', extractedText);
+
+    // You can store or use the extracted text here
     addPenaltyResponse = { status: 100, alert: '' };
-    redirect(`/cars-limousines/penalties/add?step=1`);  // Redirect to the second step
+    redirect(`/cars-limousines/penalties/add?step=1`);
+
   } else if (step === 1) {
+    // Convert FormData to an object
+    const formDataObject: Record<string, any> = {};
+    formData.forEach((value, key) => {
+      formDataObject[key] = value || null;
+    });
+
+    // Convert numerical fields
+    if (formDataObject.InfractionNumberPenalty) {
+      formDataObject.InfractionNumberPenalty = Number(formDataObject.InfractionNumberPenalty);
+    }
+    if (formDataObject.AmountPenalty) {
+      formDataObject.AmountPenalty = Number(formDataObject.AmountPenalty);
+    }
+
+    // Remove empty fields
+    for (const key in formDataObject) {
+      if (formDataObject[key] === null) {
+        delete formDataObject[key];
+      }
+    }
+
+    // Log the data being sent
+    console.log('Sending data to AddPenalty:', formDataObject);
+
+    // Validate the form data
     const formValidation = validateData(formDataObject, AddPenaltySchema);
     if (formValidation !== null) {
       return formValidation;
     }
 
-    // Call the AddPenalty service to add the penalty to the database
+    // Add the penalty using the AddPenalty service
     const response = await AddPenalty({
       Type: formDataObject.typePenalty,
       Location: formDataObject.locationPenalty,
       Infraction_number: formDataObject.InfractionNumberPenalty,
       Car: formDataObject.CarPenalty,
-      Car_plate_number: formDataObject.CarPlateNumberPenalty,
-      Infraction_date: formDataObject.InfractionDatePenalty || new Date().toISOString(),  // Use current date if not provided
+      Car_plate_number: formDataObject.CarPlateNumberPenalty,  // Include this if needed
+      Infraction_date: formDataObject.InfractionDatePenalty || new Date().toISOString(),
       Amount: formDataObject.AmountPenalty,
       Currency: formDataObject.CurrencyPenalty,
     });
 
+    // Log the response from the server
     console.log('Response from AddPenalty:', response);
 
     if (response.status === 200) {

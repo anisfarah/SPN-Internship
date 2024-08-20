@@ -2,8 +2,15 @@
 import useFetch from '@/hooks/useFetch';
 import { cookies } from 'next/headers';
 
+
+
+interface ExtractTextResponse {
+  extracted_text?: string;
+}
+
+
 const AddPenalty = async (penaltyData: any) => {
-  const url = 'http://localhost:8000/AddPenalty'; 
+  const url = 'http://127.0.0.1:8000/AddPenalty'; 
   const accessToken = cookies().get('accessToken')?.value;
 
   try {
@@ -85,8 +92,57 @@ const FindAllPenalties = async (queryParams: Record<string, string[]>) => {
   return { response, alert: response?.message || response?.error };
 };
 
+const extractDocument = async (file: File): Promise<Blob | null> => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('http://127.0.0.1:8000/extract-document/', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to extract document: ${response.statusText}`);
+    }
+
+    const blob = await response.blob(); 
+    return blob;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return null;
+  }
+};
+
+const extractText = async (documentBlob: Blob): Promise<string | null> => {
+  try {
+    const extractedDocumentFormData = new FormData();
+    extractedDocumentFormData.append('file', documentBlob, 'extracted_document.jpg');
+
+    const response = await fetch('http://127.0.0.1:8000/extract-text/', {
+      method: 'POST',
+      body: extractedDocumentFormData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Text extraction failed: ${response.statusText}`);
+    }
+
+    // Cast the result of response.json() to ExtractTextResponse
+    const data = await response.json() as ExtractTextResponse;
+    return data.extracted_text || null;
+  } catch (error) {
+    console.error('Text extraction error:', error);
+    return null;
+  }
+};
+
+
+
 export {
   AddPenalty,
   UpdatePenaltyInfo,
-  FindAllPenalties
+  FindAllPenalties,
+  extractDocument,
+  extractText
 };
