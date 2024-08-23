@@ -81,6 +81,24 @@ async def delete_penalty(penalty_id:str):
         return {"status code":200, "message":"penalty updated successfully"}
     except Exception as e:
         return HTTPException(status_code=500, detail=f"Some erroe occured {e}")
+    
+    
+# Get Penalty by ID
+@router.get("/penalty/{penalty_id}")
+async def get_penalty_by_id(penalty_id: str):
+    try:
+        # Convert the string ID to an ObjectId
+        id = ObjectId(penalty_id)
+        penalty = collection.find_one({"_id": id})
+        if not penalty:
+            return HTTPException(status_code=404, detail=f"Penalty does not exist")
+        penalty["_id"] = str(penalty["_id"])
+        # If the penalty does not exist, return a 404 error
+        return {"status code":200, "message":"penalty detail successfully","penalty":penalty}
+       
+    except Exception as e:
+        return HTTPException(status_code=500, detail=f"Some erroe occured {e}")
+
 # Use the function we refactored earlier
 def order_points(pts):
     rect = np.zeros((4, 2), dtype="float32")
@@ -200,7 +218,7 @@ def extract_document(image_true, trained_model, image_size=384, buffer=10):
     return final
 
 
-def ocr_space_file(image_data, overlay=False, api_key='helloworld', language='fre'):
+def ocr_space_file(image_data, overlay=False, api_key='K86107864288957', language='fre'):
     payload = {
         'isOverlayRequired': overlay,
         'apikey': api_key,
@@ -234,94 +252,177 @@ def preprocess_image(image_path):
 
 
 # Endpoint to handle file uploads and document extraction
-@app.post("/extract-document/")
-async def extract_document_endpoint(file: UploadFile = File(...)):
-    contents = await file.read()
-    nparr = np.frombuffer(contents, np.uint8)
-    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)[:, :, ::-1]
+# @app.post("/extract-document/")
+# async def extract_document_endpoint(file: UploadFile = File(...)):
+#     contents = await file.read()
+#     nparr = np.frombuffer(contents, np.uint8)
+#     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)[:, :, ::-1]
 
-    model_path = "../car-penalties/modeling/model_r50_iou_mix_2C020.pth"  # Update this path to your model
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    trained_model = load_model(num_classes=2, checkpoint_path=model_path, device=device)
+#     model_path = "../car-penalties/modeling/model_r50_iou_mix_2C020.pth"  # Update this path to your model
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#     trained_model = load_model(num_classes=2, checkpoint_path=model_path, device=device)
 
-    # Perform the document extraction
-    extracted_image = extract_document(image, trained_model)
+#     # Perform the document extraction
+#     extracted_image = extract_document(image, trained_model)
 
-    output_path = "extractedImages/extracted_document.jpg"
-    cv2.imwrite(output_path, extracted_image.astype('uint8'))
+#     output_path = "extractedImages/extracted_document.jpg"
+#     cv2.imwrite(output_path, extracted_image.astype('uint8'))
 
-    return FileResponse(output_path, media_type="image/jpeg")
+#     return FileResponse(output_path, media_type="image/jpeg")
 
-@app.post("/extractAndDenoise-document/")
-async def extract_denoise_document_endpoint(file: UploadFile = File(...)):
-    contents = await file.read()
-    nparr = np.frombuffer(contents, np.uint8)
-    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)[:, :, ::-1]
+# @app.post("/extractAndDenoise-document/")
+# async def extract_denoise_document_endpoint(file: UploadFile = File(...)):
+#     contents = await file.read()
+#     nparr = np.frombuffer(contents, np.uint8)
+#     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)[:, :, ::-1]
 
-    # Load the document extraction model
-    model_path = "../car-penalties/modeling/model_r50_iou_mix_2C020.pth"  # Update this path to your model
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    trained_model = load_model(num_classes=2, checkpoint_path=model_path, device=device)
+#     # Load the document extraction model
+#     model_path = "../car-penalties/modeling/model_r50_iou_mix_2C020.pth"  # Update this path to your model
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#     trained_model = load_model(num_classes=2, checkpoint_path=model_path, device=device)
 
-    # Perform the document extraction
-    extracted_image = extract_document(image, trained_model)
-    output_path = "extractedImages/extracted_document.jpg"
-    cv2.imwrite(output_path, extracted_image.astype('uint8'))
+#     # Perform the document extraction
+#     extracted_image = extract_document(image, trained_model)
+#     output_path = "extractedImages/extracted_document.jpg"
+#     cv2.imwrite(output_path, extracted_image.astype('uint8'))
     
-    # Rebuild and load the denoising model using functional API
-    input_shape = (None, None, 1)
-    inputs = Input(shape=input_shape)
+#     # Rebuild and load the denoising model using functional API
+#     input_shape = (None, None, 1)
+#     inputs = Input(shape=input_shape)
 
-    # Encoder
-    x = Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same', name='Conv1')(inputs)
-    x = BatchNormalization(name='BN1')(x)
-    x = MaxPooling2D((2, 2), padding='same', name='pool1')(x)
+#     # Encoder
+#     x = Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same', name='Conv1')(inputs)
+#     x = BatchNormalization(name='BN1')(x)
+#     x = MaxPooling2D((2, 2), padding='same', name='pool1')(x)
 
-    # Decoder
-    x = Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same', name='Conv2')(x)
-    x = UpSampling2D((2, 2), name='upsample1')(x)
-    outputs = Conv2D(filters=1, kernel_size=(3, 3), activation='sigmoid', padding='same', name='Conv3')(x)
+#     # Decoder
+#     x = Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same', name='Conv2')(x)
+#     x = UpSampling2D((2, 2), name='upsample1')(x)
+#     outputs = Conv2D(filters=1, kernel_size=(3, 3), activation='sigmoid', padding='same', name='Conv3')(x)
 
-    model = Model(inputs, outputs)
-    model.load_weights('../models/denoising_autoencoder_80.h5')  # Ensure this path is correct
+#     model = Model(inputs, outputs)
+#     model.load_weights('../models/denoising_autoencoder_80.h5')  # Ensure this path is correct
 
-    # Preprocess the extracted image
-    preprocessed_image = preprocess_image(output_path)
+#     # Preprocess the extracted image
+#     preprocessed_image = preprocess_image(output_path)
 
-    # Denoise the image
-    denoised_image = model.predict(preprocessed_image)
+#     # Denoise the image
+#     denoised_image = model.predict(preprocessed_image)
 
-    # Remove the batch dimension and channel dimension
-    denoised_image = np.squeeze(denoised_image)
+#     # Remove the batch dimension and channel dimension
+#     denoised_image = np.squeeze(denoised_image)
 
-    # Save the denoised image
-    denoised_image_path = "denoisedImages/denoised_document.jpg"
-    cv2.imwrite(denoised_image_path, denoised_image * 255)  # Convert back to 0-255 range and save
+#     # Save the denoised image
+#     denoised_image_path = "denoisedImages/denoised_document.jpg"
+#     cv2.imwrite(denoised_image_path, denoised_image * 255)  # Convert back to 0-255 range and save
 
-    return FileResponse(denoised_image_path, media_type="image/jpeg")
+#     return FileResponse(denoised_image_path, media_type="image/jpeg")
 
-@app.post("/extract-text/")
-async def extract_text(file: UploadFile = File(...)):
-    # Read the image file into memory
-    image_data = await file.read()
+# @app.post("/extract-text/")
+# async def extract_text(file: UploadFile = File(...)):
+#     # Read the image file into memory
+#     image_data = await file.read()
 
-    # Use the OCR function to extract text
-    extracted_text = ocr_space_file(image_data)
+#     # Use the OCR function to extract text
+#     extracted_text = ocr_space_file(image_data)
 
-    # Return the extracted text as a JSON response
-    return JSONResponse(content={"extracted_text": extracted_text})
+#     # Return the extracted text as a JSON response
+#     return JSONResponse(content={"extracted_text": extracted_text})
+
+
+import base64
+
+# @app.post("/pipeline-document/")
+# async def pipeline_endpoint(file: UploadFile = File(...)):
+#     try:
+#         # Generate a unique ID for the image
+#         unique_id = str(uuid4())
+
+#         # Read and decode the image
+#         contents = await file.read()
+#         nparr = np.frombuffer(contents, np.uint8)
+#         image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+#         # Load the document extraction model
+#         model_path = "../car-penalties/modeling/model_r50_iou_mix_2C020.pth"  # Update this path to your model
+#         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#         trained_model = load_model(num_classes=2, checkpoint_path=model_path, device=device)
+
+#         # Perform the document extraction
+#         extracted_image = extract_document(image, trained_model)
+#         output_path = f"extractedImages/extracted_document_{unique_id}.jpg"
+#         cv2.imwrite(output_path, extracted_image.astype('uint8'))
+
+#         # Rebuild and load the denoising model using functional API
+#         input_shape = (None, None, 1)
+#         inputs = Input(shape=input_shape)
+
+#         # Encoder
+#         x = Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same', name='Conv1')(inputs)
+#         x = BatchNormalization(name='BN1')(x)
+#         x = MaxPooling2D((2, 2), padding='same', name='pool1')(x)
+
+#         # Decoder
+#         x = Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same', name='Conv2')(x)
+#         x = UpSampling2D((2, 2), name='upsample1')(x)
+#         outputs = Conv2D(filters=1, kernel_size=(3, 3), activation='sigmoid', padding='same', name='Conv3')(x)
+
+#         model = Model(inputs, outputs)
+#         model.load_weights('../models/denoising_autoencoder_80.h5')  # Ensure this path is correct
+
+#         # Preprocess the extracted image
+#         preprocessed_image = preprocess_image(output_path)
+
+#         # Denoise the image
+#         denoised_image = model.predict(preprocessed_image)
+
+#         # Remove the batch dimension and channel dimension
+#         denoised_image = np.squeeze(denoised_image)
+
+#         # Save the denoised image with the unique ID (optional)
+#         denoised_image_path = f"denoisedImages/denoised_document_{unique_id}.jpg"
+#         cv2.imwrite(denoised_image_path, denoised_image * 255)  # Convert back to 0-255 range and save
+
+#         # Convert the denoised image to binary (JPEG format)
+#         _, buffer = cv2.imencode('.jpg', denoised_image * 255)
+#         denoised_image_binary = buffer.tobytes()
+
+#         # Convert the binary image data to a base64 string
+#         denoised_image_base64 = base64.b64encode(denoised_image_binary).decode('utf-8')
+
+#         # Use OCR to extract text from the denoised image
+#         with open(denoised_image_path, "rb") as image_file:
+#             extracted_text = ocr_space_file(image_file)
+
+#         # Return the denoised image (base64 encoded) and the extracted text as JSON
+#         return JSONResponse(content={
+#             "denoised_image": denoised_image_base64,
+#             "extracted_text": extracted_text
+#         })
+
+#     except Exception as e:
+#         import traceback
+#         print(traceback.format_exc())  # Print the full traceback to the console for debugging
+#         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 
+
+"""this endpoint is for extracting the document from any background then extracting the text from the document """
+# Directory to save images
+IMAGE_DIR = "static/images/"
+os.makedirs(IMAGE_DIR, exist_ok=True)
 @app.post("/pipeline-document/")
 async def pipeline_endpoint(file: UploadFile = File(...)):
     try:
-        # Generate a unique ID for the image
-        unique_id = str(uuid4())
+        # Generate a unique filename
+        unique_filename = f"{uuid4()}.jpg"
+        file_path = os.path.join(IMAGE_DIR, unique_filename)
 
+        # Read and decode the image
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)
-        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)[:, :, ::-1]
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         # Load the document extraction model
         model_path = "../car-penalties/modeling/model_r50_iou_mix_2C020.pth"  # Update this path to your model
@@ -330,49 +431,71 @@ async def pipeline_endpoint(file: UploadFile = File(...)):
 
         # Perform the document extraction
         extracted_image = extract_document(image, trained_model)
-        output_path = f"extractedImages/extracted_document_{unique_id}.jpg"
-        cv2.imwrite(output_path, extracted_image.astype('uint8'))
 
-        # Rebuild and load the denoising model using functional API
-        input_shape = (None, None, 1)
-        inputs = Input(shape=input_shape)
+        # Save the extracted image to the server
+        cv2.imwrite(file_path, extracted_image.astype('uint8'))
 
-        # Encoder
-        x = Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same', name='Conv1')(inputs)
-        x = BatchNormalization(name='BN1')(x)
-        x = MaxPooling2D((2, 2), padding='same', name='pool1')(x)
+        # Construct the URL for the saved image
+        image_url = f"http://localhost:8000/{file_path}"
 
-        # Decoder
-        x = Conv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same', name='Conv2')(x)
-        x = UpSampling2D((2, 2), name='upsample1')(x)
-        outputs = Conv2D(filters=1, kernel_size=(3, 3), activation='sigmoid', padding='same', name='Conv3')(x)
-
-        model = Model(inputs, outputs)
-        model.load_weights('../models/denoising_autoencoder_80.h5')  # Ensure this path is correct
-
-        # Preprocess the extracted image
-        preprocessed_image = preprocess_image(output_path)
-
-        # Denoise the image
-        denoised_image = model.predict(preprocessed_image)
-
-        # Remove the batch dimension and channel dimension
-        denoised_image = np.squeeze(denoised_image)
-
-        # Save the denoised image with the unique ID
-        denoised_image_path = f"denoisedImages/denoised_document_{unique_id}.jpg"
-        cv2.imwrite(denoised_image_path, denoised_image * 255)  # Convert back to 0-255 range and save
-
-        # Use the OCR function to extract text
-        with open(denoised_image_path, "rb") as image_file:
+        # Use OCR to extract text from the denoised image
+        with open(file_path, "rb") as image_file:
             extracted_text = ocr_space_file(image_file)
 
-        # Return the extracted text as JSON
-        return JSONResponse(content={"extracted_text": extracted_text})
+        # Return the image URL and extracted text
+        return {
+            "image_url": image_url,
+            "extracted_text": extracted_text
+        }
 
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        import traceback
+        traceback.print_exc()  # Print the full traceback to the console for debugging
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    
+# @app.post("/pipeline-document/")
+# async def pipeline_endpoint(file: UploadFile = File(...)):
+#     try:
+#         # Generate a unique ID for the image
+#         unique_id = str(uuid4())
 
+#         # Read and decode the image
+#         contents = await file.read()
+#         nparr = np.frombuffer(contents, np.uint8)
+#         image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+#         # Load the document extraction model
+#         model_path = "../car-penalties/modeling/model_r50_iou_mix_2C020.pth"  # Update this path to your model
+#         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#         trained_model = load_model(num_classes=2, checkpoint_path=model_path, device=device)
+
+#         # Perform the document extraction
+#         extracted_image = extract_document(image, trained_model)
+#         output_path = f"extractedImages/extracted_document_{unique_id}.jpg"
+#         cv2.imwrite(output_path, extracted_image.astype('uint8'))
+
+
+#         # Convert the denoised image to binary (JPEG format)
+#         _, buffer = cv2.imencode('.jpg', extracted_image * 255)
+#         denoised_image_binary = buffer.tobytes()
+
+#         # Convert the binary image data to a base64 string
+#         extracted_image_base64 = base64.b64encode(denoised_image_binary).decode('utf-8')
+
+#         # Use OCR to extract text from the denoised image
+#         with open(output_path, "rb") as image_file:
+#             extracted_text = ocr_space_file(image_file)
+
+#         # Return the denoised image (base64 encoded) and the extracted text as JSON
+#         return JSONResponse(content={
+#             "extracted_image": extracted_image_base64,
+#             "extracted_text": extracted_text
+#         })
+
+#     except Exception as e:
+#         import traceback
+#         print(traceback.format_exc())  # Print the full traceback to the console for debugging
+#         return JSONResponse(content={"error": str(e)}, status_code=500)
 app.include_router(router)
 # To run the FastAPI app, use Uvicorn
 if __name__ == "__main__":

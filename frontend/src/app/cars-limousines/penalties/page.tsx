@@ -11,6 +11,7 @@ import Pagination from '@/components/ui/pagination';
 import { EmptyDataComponent } from '@/components/ui/error';
 import { useSearchParams } from 'next/navigation';
 import StatusBadge from '@/components/ui/statusBadge'; // Import the StatusBadge component
+import DoubleArrowIcon from '@/components/icons/doubleArrowIcon'
 
 // Define the Penalty type inline
 type Penalty = {
@@ -75,12 +76,19 @@ export default function Penalties() {
                     <Column>{(currentPage - 1) * itemsPerPage + index + 1}</Column>
                     <Column>{penalty.Type}</Column>
                     <Column>{penalty.Location}</Column>
-                    <Column>{new Date(penalty.Infraction_date).toLocaleDateString()}</Column>
-                    <Column>{penalty.Car}</Column>
+                    <Column>{new Date(penalty.Infraction_date).toLocaleDateString()}</Column>                    <Column>{penalty.Car}</Column>
                     <Column>{penalty.Amount}</Column>
                     <Column>{penalty.Currency}</Column>
                     <Column>
                     <StatusBadge status={'UNPAID'} />                    </Column>
+                    <Column fitted>
+                      <Link href={`penalties/edit`}>
+                        <RoundedButton
+                          label={<DoubleArrowIcon className="flex size-7 shrink-0 grow-0" />}
+                          className="group flex size-10 items-center justify-center rounded-full font-text text-2xl hover:fill-primary hover:text-primary"
+                        />
+                      </Link>
+                    </Column>
                   </Row>
                 ))}
               </Table>

@@ -1,3 +1,4 @@
+from datetime import datetime
 def individual_data(penalty):
     return {
         "id": str(penalty["_id"]),
@@ -6,7 +7,8 @@ def individual_data(penalty):
         "Infraction_number":penalty["Infraction_number"],
         "Car":penalty["Car"],
         "Amount":penalty["Amount"],
-        "Currency":penalty["Currency"]
+        "Currency":penalty["Currency"],
+        "Infraction_date": penalty["Infraction_date"].isoformat() if isinstance(penalty["Infraction_date"], datetime) else penalty["Infraction_date"],
     }
 
 def allPenalties(penalties):
