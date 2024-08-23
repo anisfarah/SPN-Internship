@@ -7,7 +7,7 @@ class Penalty(BaseModel):
     Location: str
     Infraction_number: int
     Car: str
-    Car_plate_number: str
+    Car_plate_number: str=None
     Infraction_date: datetime
     Amount: float
     Currency: str

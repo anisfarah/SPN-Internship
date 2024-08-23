@@ -26,7 +26,7 @@ export default async function AddPenalty({
         titles={['Upload', 'Verification']}
         config={[uploadPenaltyConfig, addPenaltyConfig]}
         action={addPenaltyWithStepAction}
-        step={step}  // Ensure this prop is needed
+        step={step}
       />
     </Container>
   );

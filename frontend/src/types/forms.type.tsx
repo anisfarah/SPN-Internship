@@ -37,7 +37,7 @@ export type DynamicFormWithStepsProps = {
   fullWidth?: boolean;
   stepContainerFitWidth?: boolean;
   titles: any[];
-  step?: number;
+  step?: number;  
 };
 export type CustomFormProps = {
   action: (initialState: any, formData: FormData) => Promise<any>;

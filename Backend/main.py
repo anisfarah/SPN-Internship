@@ -49,12 +49,13 @@ async def get_all_penalties():
 
 #Add Penalty
 @router.post("/AddPenalty")
-async def create_penalty(new_penalty:Penalty):
+async def create_penalty(new_penalty: Penalty):
     try:
-        resp= collection.insert_one(dict(new_penalty))
-        return {"Status_code":200, "id":str(resp.inserted_id)}
-    except Exception as e: 
-        return HTTPException(status_code=500, detail=f"Some erroe occured {e}")
+        print("Received penalty data:", new_penalty)  # Debug print
+        resp = collection.insert_one(dict(new_penalty))
+        return {"Status_code": 200, "id": str(resp.inserted_id)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Some error occurred: {e}")
 
 #Update Penalty
 @router.put("/{penalty_id}")

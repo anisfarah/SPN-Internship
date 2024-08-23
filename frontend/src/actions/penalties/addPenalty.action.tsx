@@ -103,4 +103,6 @@ export const addPenaltyAction = async (
       return addPenaltyResponse;
     }
   }
+
+  return addPenaltyResponse;
 };
