@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project aims to automate the extraction and management of penalties.
+This project aims to automate the extraction and management of penalties. It is a car penalties management system that automates the extraction of fine details from images, assists with penalty decisions, and handles invoicing through machine learning and OCR integration.
 
 ## Project Structure
 
@@ -10,9 +10,9 @@ The project is organized into the following directories:
 
     project-root/
     |-- data
-    | |-- cleaned
-    | |-- raw
-    | |-- processed
+    |   |-- cleaned
+    |   |-- raw
+    |   |-- processed
     |-- docs
     |-- models
     |-- notebooks
