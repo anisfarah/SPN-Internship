@@ -29,14 +29,14 @@ export const addPenaltyAction = async (
 
   if (step === 0) {
     const file = formData.get('penaltyDocument');
-    if (!file || !(file instanceof File)) {
+    if (!file) {
       throw new Error('Image file not found or invalid.');
     }
 
     const apiFormData = new FormData();
     apiFormData.append('file', file);
 
-    const pipelineResponse = await fetch('http://localhost:8000/pipeline-document/', {
+    const pipelineResponse = await fetch('http://127.0.0.1:8000/pipeline-document/', {
       method: 'POST',
       body: apiFormData,
     });
@@ -60,7 +60,6 @@ export const addPenaltyAction = async (
 
   } else if (step === 1) {
     // Decode the image_url from the URL parameters and add it to the formDataObject
-    // const encodedImageUrl = formData.get('image_url') as string;
     const imageUrl = decodeURIComponent(imageLink);
     if (!imageUrl) {
       console.log('🚀 ~ Initial State:', initialState);
