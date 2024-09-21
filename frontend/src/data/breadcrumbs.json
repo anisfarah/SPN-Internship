@@ -1,0 +1,23 @@
+{
+  "vehicles": "vehicle",
+  "documentation": "documentation",
+  "cars": "car",
+  "missions": "mission",
+  "enquiries": "enquiry",
+  "chauffeurs": "chauffeur",
+  "penalties": "penalty",
+  "garages": "garage",
+  "vouchers": "voucher",
+  "users": "user",
+  "profile": "profile",
+  "all-users": "user",
+  "fees": "fee",
+  "extra-fees": "extra fee",
+  "price-config": "price config",
+  "404": "Page",
+  "hiring-chauffeurs": "hiring chauffeurs",
+  "services": "service",
+  "agencies": "agency",
+  "properties": "property",
+  "logs": "log"
+}

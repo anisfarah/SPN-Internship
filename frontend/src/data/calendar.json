@@ -1,0 +1,47 @@
+{
+  "days": [
+    {
+      "shortText": "Sun",
+      "longText": "Sunday"
+    },
+    {
+      "shortText": "Mon",
+      "longText": "Monday"
+    },
+    {
+      "shortText": "Tue",
+      "longText": "Tuesday"
+    },
+    {
+      "shortText": "Wed",
+      "longText": "Wednesday"
+    },
+    {
+      "shortText": "Thu",
+      "longText": "Thursday"
+    },
+    {
+      "shortText": "Fri",
+      "longText": "Friday"
+    },
+    {
+      "shortText": "Sat",
+      "longText": "Saturday"
+    }
+  ],
+  "periods": ["month", "week", "day"],
+  "monthNames": [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "image": {
+    "src": "/images/login.webp",
+    "alt": "login image",
+    "blurDataURL": "/images/blur/login.webp"
+  },
+  "login": {
+    "title": "WELCOME",
+    "text": "Login to your account",
+    "button": "Login"
+  },
+  "email": {
+    "title": "Please check your email",
+    "text1": "We sent an email to ",
+    "text2": "Click the link to log in or sign up.",
+    "image": {
+      "src": "/images/VerifyEmail.svg",
+      "alt": "email sent"
+    }
+  }
+}

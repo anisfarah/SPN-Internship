@@ -1,0 +1,11 @@
+{
+  "image": {
+    "src": "/images/login.jpeg",
+    "alt": "login image",
+    "blurDataURL": "/images/blur/login.webp"
+  },
+  "complete": {
+    "title": "Please complete your information",
+    "button": "Confirm"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "table": {
+    "title": "Agencies list",
+    "columns": ["NAME", "EMAIL", "PHONE NUMBER", "COUNTRIES", "CATALOG", "RATING", ""]
+  },
+  "links": {
+    "addAgency": "agencies/add"
+  },
+  "addForm": [
+    {
+      "label": "Name",
+      "type": "text",
+      "placeholder": "Agency Name",
+      "required": true,
+      "name": "name"
+    },
+    {
+      "label": "Email",
+      "type": "email",
+      "placeholder": "Email",
+      "required": false,
+      "name": "email"
+    },
+    {
+      "label": "Phone number",
+      "type": "phone",
+      "placeholder": "Phone number",
+      "required": false,
+      "name": "phoneNumber"
+    },
+    {
+      "label": "Website",
+      "type": "text",
+      "placeholder": "Website",
+      "required": false,
+      "name": "website"
+    },
+    {
+      "label": "Country",
+      "type": "ac",
+      "isInner": true,
+      "options": [
+        {
+          "name": "USA",
+          "value": "USA"
+        },
+        {
+          "name": "UK",
+          "value": "UK"
+        },
+        {
+          "name": "France",
+          "value": "France"
+        },
+        {
+          "name": "Germany"
+        }
+      ],
+      "required": false,
+      "name": "country"
+    },
+    {
+      "label": "Catalog",
+      "isInner": true,
+      "type": "select",
+      "multiple": true,
+      "options": [
+        {
+          "name": "Tours"
+        },
+        {
+          "name": "Hotels"
+        },
+        {
+          "name": "Flights"
+        },
+        {
+          "name": "Cruises"
+        }
+      ],
+      "required": false,
+      "name": "catalog"
+    }
+  ]
+}
