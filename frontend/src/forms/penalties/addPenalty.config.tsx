@@ -3,65 +3,57 @@ import { getCountries } from '@/helpers/cities';
 import { capitalize } from '@/utils/inputHelpers';
 
 
-export const getAddPenaltyConfig = async () => {
-  // const { response: agencyCatalogResponse } = await GetAgencyCatalog();
-  // const agencyCatalogs = agencyCatalogResponse?.data || [];
-  // const catalogOptions = agencyCatalogs
-  //   .sort()
-  //   .map((item: string) => ({ name: capitalize(item), value: item }));
-
+export const getAddPenaltyConfig = async (initialData = {}) => {
   return [
     {
       label: 'Type',
       type: 'text',
       required: true,
-      name: 'typePenalty'
+      name: 'typePenalty',
+      defaultValue: initialData.typePenalty || '',  // Ensure the description is pre-filled
     },
     {
       label: 'Location',
       type: 'text',
       required: false,
-      name: 'locationPenalty'
+      name: 'locationPenalty',
+      defaultValue: initialData.locationPenalty || '',  // Pre-fill with the extracted location
     },
     {
       label: 'Infraction number',
-      type: 'number',
+      type: 'text',  // Using text to support non-numeric characters
       required: false,
-      name: 'InfractionNumberPenalty'
+      name: 'InfractionNumberPenalty',
+      defaultValue: initialData.InfractionNumberPenalty || '',  // Pre-fill with the extracted id_penalty
     },
     {
       label: 'Car',
       type: 'text',
       required: false,
-      name: 'CarPenalty'
+      name: 'CarPenalty',
+      defaultValue: initialData.CarPenalty || '',  // Pre-fill with the extracted car registration
     },
     {
       label: 'PRICE',
-      type: 'label',  // Custom type for label
+      type: 'label',
       required: false,
       name: 'PriceLabel',
-      style: { fontWeight: 'bold', display: 'block', marginBottom: '10px' }
+      style: { fontWeight: 'bold', display: 'block', marginBottom: '10px' },
     },
     {
-      label: '',
-      type: 'group',
-      name: 'AmountCurrencyGroup',
-      fields: [
-        {
-          label: 'Amount',
-          type: 'number',
-          required: false,
-          name: 'AmountPenalty',
-        },
-        {
-          label: 'Currency',
-          type: 'text',
-          required: false,
-          name: 'CurrencyPenalty',
-        }
-      ]
+      label: 'Amount',
+      type: 'number',
+      required: false,
+      name: 'AmountPenalty',
+      defaultValue: initialData.AmountPenalty || '',  // Pre-fill with the extracted amount
+    },
+    {
+      label: 'Currency',
+      type: 'text',
+      required: false,
+      name: 'CurrencyPenalty',
+      defaultValue: initialData.CurrencyPenalty || '',  // Pre-fill with the extracted currency
     }
+
   ];
 };
-
-
